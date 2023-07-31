@@ -10,90 +10,134 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useEffect } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
+import './index.css'
+import { saveAs } from 'file-saver'
 
-const fetchSongList = async () => {
-  const res = await fetch('/api/song?song="乡愁&pageNum=1')
+interface SongProps {
+  name: string
+  pageNum: number
+  pageSize: number
+}
+const fetchSongList = async ({ name, pageNum, pageSize }: SongProps) => {
+  const res = await fetch(`/api/song?name=${name}&pageNum=1`)
   return res.json()
 }
-const invoices = [
-  {
-    invoice: 'INV001',
-    paymentStatus: 'Paid',
-    totalAmount: '$250.00',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    invoice: 'INV002',
-    paymentStatus: 'Pending',
-    totalAmount: '$150.00',
-    paymentMethod: 'PayPal',
-  },
-  {
-    invoice: 'INV003',
-    paymentStatus: 'Unpaid',
-    totalAmount: '$350.00',
-    paymentMethod: 'Bank Transfer',
-  },
-  {
-    invoice: 'INV004',
-    paymentStatus: 'Paid',
-    totalAmount: '$450.00',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    invoice: 'INV005',
-    paymentStatus: 'Paid',
-    totalAmount: '$550.00',
-    paymentMethod: 'PayPal',
-  },
-  {
-    invoice: 'INV006',
-    paymentStatus: 'Pending',
-    totalAmount: '$200.00',
-    paymentMethod: 'Bank Transfer',
-  },
-  {
-    invoice: 'INV007',
-    paymentStatus: 'Unpaid',
-    totalAmount: '$300.00',
-    paymentMethod: 'Credit Card',
-  },
-]
 
-export default async function Song() {
-  useEffect(() => {
-    const fetchData = async () => {
-      const a = await fetchSongList()
-      console.log('a', a)
-    }
-    fetchData()
-  }, [])
+const extractJson = (str: string) => {
+  const start = str.indexOf('{')
+  const end = str.lastIndexOf('}')
+  return str.substring(start, end + 1)
+}
+
+export default function Song() {
+  const [name, setName] = useState('')
+  const [list, setList] = useState<any[]>([])
+
+  const fetchData = async () => {
+    const result = await fetchSongList({
+      name,
+      pageNum: 1,
+      pageSize: 10,
+    })
+    return result.list ?? []
+  }
+
+  const handleDownload = async (l: any) => {
+    const res = await fetch(`/api/song/download?songId=${l.songId}`)
+    const wrap = await res.json();
+    const jsonStr = extractJson(wrap.result)
+    console.log(jsonStr);
+    const data = JSON.parse(jsonStr)
+    console.log(data.lqurl);
+    saveAs(data.data.lqurl, `${data.data.songName}.mp3`)
+  }
+
+  const onNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setName(e.currentTarget.value)
+  }
+  const onSearch = async () => {
+    const songList = await fetchData()
+    setList(songList)
+  }
+
   return (
     <>
-      <div className='flex gap-2 w-full'>
-        <Input />
-        <Button>搜索</Button>
+      <div className="flex gap-2 w-full mb-5">
+        <Input
+          placeholder="歌曲名称"
+          value={name}
+          onChange={onNameChange}
+          onMouseEnter={onSearch}
+        />
+        <Button className="w-[100px]" onClick={onSearch}>
+          搜索
+        </Button>
       </div>
 
       <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
+        {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Invoice</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Method</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
+            <TableHead>序号</TableHead>
+            <TableHead className="w-[100px]">名称</TableHead>
+            <TableHead>原唱</TableHead>
+            <TableHead>翻唱</TableHead>
+            <TableHead>下载</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.invoice}>
-              <TableCell className="font-medium">{invoice.invoice}</TableCell>
-              <TableCell>{invoice.paymentStatus}</TableCell>
-              <TableCell>{invoice.paymentMethod}</TableCell>
-              <TableCell className="text-right">
-                {invoice.totalAmount}
+          {list.map((l, i) => (
+            <TableRow key={l.songId}>
+              <TableCell>{i + 1}</TableCell>
+              <TableCell
+                className="font-medium"
+                dangerouslySetInnerHTML={{
+                  __html: l.songName,
+                }}
+              ></TableCell>
+              <TableCell>{l.originSinger}</TableCell>
+              <TableCell>{l.singer}</TableCell>
+              <TableCell>
+                <span
+                  className="w-5 inline-block cursor-pointer"
+                  onClick={() => handleDownload(l)}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g
+                      id="SVGRepo_tracerCarrier"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></g>
+                    <g id="SVGRepo_iconCarrier">
+                      {' '}
+                      <path
+                        d="M12 7L12 14M12 14L15 11M12 14L9 11"
+                        stroke="#1C274C"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>{' '}
+                      <path
+                        d="M16 17H12H8"
+                        stroke="#1C274C"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                      ></path>{' '}
+                      <path
+                        d="M22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C21.5093 4.43821 21.8356 5.80655 21.9449 8"
+                        stroke="#1C274C"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                      ></path>{' '}
+                    </g>
+                  </svg>
+                </span>
               </TableCell>
             </TableRow>
           ))}
