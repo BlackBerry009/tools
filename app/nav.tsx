@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navigation = [
-  { name: '全民 k 歌', href: '/song' },
-  // { name: 'Playground', href: '/playground' },
+  { name: '全民 k 歌', href: '/ktv' },
+  { name: '歌曲搜索', href: '/song' },
 ]
 
 function classNames(...classes: string[]) {
@@ -16,11 +16,11 @@ export default function Navbar() {
   const pathname = usePathname()
 
   return (
-    <div className="bg-white shadow-sm fixed">
+    <div className="bg-white shadow-sm fixed w-full">
       <div className="mx-auto max-w-7xl px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
-            <Link className="flex flex-shrink-0 items-center" href='/'>
+            <Link className="flex flex-shrink-0 items-center" href="/">
               <svg
                 width="32"
                 height="32"
@@ -40,7 +40,7 @@ export default function Navbar() {
             </Link>
             <div className="-my-px ml-6 flex space-x-8">
               {navigation.map((item) => (
-                <a
+                <Link
                   key={item.name}
                   href={item.href}
                   className={classNames(
@@ -52,7 +52,7 @@ export default function Navbar() {
                   aria-current={pathname === item.href ? 'page' : undefined}
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
             </div>
           </div>
