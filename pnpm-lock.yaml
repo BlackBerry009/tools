@@ -32,9 +32,6 @@ dependencies:
   clsx:
     specifier: ^2.0.0
     version: 2.0.0
-  extract-pure-json:
-    specifier: ^0.0.5
-    version: 0.0.5
   file-saver:
     specifier: ^2.0.5
     version: 2.0.5
@@ -812,10 +809,6 @@ packages:
   /escalade@3.1.1:
     resolution: {integrity: sha512-k0er2gUkLf8O0zKJiAhmkTnJlTvINGv7ygDNPbeIsX/TJjGJZHuh9B2UxbsaEkmlEo9MfhrSzmhIlhRlI2GXnw==}
     engines: {node: '>=6'}
-    dev: false
-
-  /extract-pure-json@0.0.5:
-    resolution: {integrity: sha512-WQwyF68uRVHP+4BLAOJM5TUbntFpSu/j8dJtSa1bu46594JyCIUXpLY33S07INBcc36n1Mv7RG4TUp36ks51vw==}
     dev: false
 
   /fast-glob@3.3.1:
