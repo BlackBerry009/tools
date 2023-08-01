@@ -1,53 +1,60 @@
+interface Props {
+  params?: Record<string, any>
+  data?: Record<string, any>
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  url: string
+}
+
+export type MethodProps = Pick<Props, 'data' | 'params'>
+
 abstract class BaseApi {
   protected abstract baseUrl: string
-  public static async request<T = unknown>(
-    options: RequestInit & { url: string }
-  ) {
-    const defaultOptions: Record<string, any> = {
-    }
-    if (['POST' || 'PUT'].includes(options.method || '')) {
-      defaultOptions.headers['Content-type'] = 'application/json; charset=utf-8'
-    }
+  public static async request<T = unknown>(options: Props) {
     const newOptions: RequestInit = {
-      ...defaultOptions,
       ...options,
     }
-    if (options.body) {
-      newOptions.body = JSON.stringify(options.body)
+    if (options.method !== 'GET') {
+      newOptions.headers = {
+        'Content-type': 'application/json',
+      }
+      if (options.data) {
+        newOptions.body = JSON.stringify(options.data)
+      }
     }
-    console.log('newOptions', newOptions)
-    const res = await fetch(`${options.url}`, newOptions)
+    const qs = options.params && new URLSearchParams(options.params)
+    const res = await fetch(`${options.url}${qs ? `?${qs}` : ''}`, newOptions)
     const { status } = res
     if (status >= 200 && status < 300) {
-      return res.json()
+      return res.json() as T
     }
     throw new Error('请求失败')
   }
 
   public async request<T = unknown>(
-    method: 'GET' | 'POST' | 'PUT',
+    method: Props['method'],
     path: string,
-    options: RequestInit
+    options: MethodProps
   ) {
     const url = `${this.baseUrl}${path}`
     return BaseApi.request<T>({
       method,
       url,
-      body: JSON.stringify(options.body),
+      data: options.data,
+      params: options.params,
     })
   }
 
-  public post(path: string, option?: RequestInit) {
+  public post(path: string, option?: MethodProps) {
     const options = Object.assign({ method: 'POST' }, option)
     return this.request('POST', path, options)
   }
 
-  public put(path: string, option?: RequestInit) {
+  public put(path: string, option?: MethodProps) {
     const options = Object.assign({ method: 'PUT' }, option)
     return this.request('PUT', path, options)
   }
 
-  public get(path: string, option?: RequestInit) {
+  public get(path: string, option?: MethodProps) {
     const options = Object.assign({ method: 'GET' }, option)
     return this.request('GET', path, options)
   }
@@ -57,4 +64,10 @@ class Api extends BaseApi {
   protected baseUrl = 'https://song-beryl.vercel.app'
 }
 
+class SystemApi extends BaseApi {
+  protected baseUrl = ''
+}
+
 export const request = new Api()
+
+export const sysRequest = new SystemApi()

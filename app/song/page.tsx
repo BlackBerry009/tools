@@ -10,13 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { use, useState } from 'react'
+import { useState } from 'react'
 import './index.css'
 import { saveAs } from 'file-saver'
 import useSWR from 'swr'
 import Loading from '../loading'
 import useSWRMutation from 'swr/mutation'
-import { triggerReqGET } from '@/lib/utils'
+import { MethodProps, sysRequest } from '../api/fetch'
+import { Download, Loader2 } from 'lucide-react'
 
 const fetcher = (...args: Parameters<typeof fetch>) =>
   fetch(...args).then((res) => res.json())
@@ -24,7 +25,7 @@ const fetcher = (...args: Parameters<typeof fetch>) =>
 const useSongList = (name: string) => {
   return useSWR(
     name ? `/api/song?pageNum=1` : null,
-    (url) => fetcher(url + `&name=${name}`),
+    (url: string) => fetcher(url + `&name=${name}`),
     {
       revalidateOnFocus: false,
       revalidateIfStale: false,
@@ -38,24 +39,15 @@ const extractJson = (str: string) => {
   return str.substring(start, end + 1)
 }
 
-const useDownloadUrl = async (songId: string) => {
-  // const res = await fetch(`/api/song/download?songId=${songId}`)
-  // const wrap = await res.json()
-  // const jsonStr = extractJson(wrap.result)
-  // const data = JSON.parse(jsonStr)
-  // return data.data.lqurl
-  const { trigger } = useSWRMutation(
-    `/api/song/download?songId=${songId}`,
-    triggerReqGET
-  )
-}
-
 export default function Song() {
   const [name, setName] = useState('')
+  const [clickIndex, setClickIndex] = useState(0)
+
   const { data: list, isValidating, mutate } = useSongList(name)
   const { trigger, isMutating } = useSWRMutation(
     `/api/song/download`,
-    triggerReqGET
+    (_, { arg }: { arg: MethodProps }) =>
+      sysRequest.get('/api/song/download', arg)
   )
 
   const handleDownloadUrl = (str: string) => {
@@ -64,16 +56,17 @@ export default function Song() {
     return json.data
   }
 
-  const handleDownload = async (l: any) => {
+  const handleDownload = async (l: any, i: number) => {
     trigger(
-      { songId: l.songId },
+      { params: { songId: l.songId } },
       {
-        onSuccess(data) {
+        onSuccess(data: any) {
           const res = handleDownloadUrl(data.result)
           saveAs(res.lqurl, `${res.songName}.mp3`)
         },
       }
     )
+    setClickIndex(i)
   }
 
   const onNameChange = (name: string) => {
@@ -129,13 +122,16 @@ export default function Song() {
                 <TableCell>{l.singer}</TableCell>
                 <TableCell>
                   {
-                    <button
+                    <Button
                       disabled={isMutating}
-                      className="w-5 inline-block cursor-pointer"
-                      onClick={() => handleDownload(l)}
+                      onClick={() => handleDownload(l, i)}
                     >
-                      <DownloadIcon />
-                    </button>
+                      {isMutating && i === clickIndex && (
+                        <Loader2 className="text-white mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      {!isMutating && <Download className="w-4 mr-2" />}
+                      下载
+                    </Button>
                   }
                 </TableCell>
               </TableRow>
@@ -146,36 +142,3 @@ export default function Song() {
     </>
   )
 }
-
-const DownloadIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-    <g
-      id="SVGRepo_tracerCarrier"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    ></g>
-    <g id="SVGRepo_iconCarrier">
-      {' '}
-      <path
-        d="M12 7L12 14M12 14L15 11M12 14L9 11"
-        stroke="#1C274C"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      ></path>{' '}
-      <path
-        d="M16 17H12H8"
-        stroke="#1C274C"
-        stroke-width="1.5"
-        stroke-linecap="round"
-      ></path>{' '}
-      <path
-        d="M22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C21.5093 4.43821 21.8356 5.80655 21.9449 8"
-        stroke="#1C274C"
-        stroke-width="1.5"
-        stroke-linecap="round"
-      ></path>{' '}
-    </g>
-  </svg>
-)
