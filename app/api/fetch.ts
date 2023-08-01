@@ -44,19 +44,19 @@ abstract class BaseApi {
     })
   }
 
-  public post(path: string, option?: MethodProps) {
+  public post<T = any>(path: string, option?: MethodProps) {
     const options = Object.assign({ method: 'POST' }, option)
-    return this.request('POST', path, options)
+    return this.request<T>('POST', path, options)
   }
 
-  public put(path: string, option?: MethodProps) {
+  public put<T = any>(path: string, option?: MethodProps) {
     const options = Object.assign({ method: 'PUT' }, option)
-    return this.request('PUT', path, options)
+    return this.request<T>('PUT', path, options)
   }
 
-  public get(path: string, option?: MethodProps) {
+  public get<T = any>(path: string, option?: MethodProps) {
     const options = Object.assign({ method: 'GET' }, option)
-    return this.request('GET', path, options)
+    return this.request<T>('GET', path, options)
   }
 }
 
