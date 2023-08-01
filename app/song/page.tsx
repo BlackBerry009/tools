@@ -1,58 +1,144 @@
 'use client'
-
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import Image from 'next/image'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { useState } from 'react'
+import './index.css'
 import { saveAs } from 'file-saver'
-import { getSong } from '../api/song'
+import useSWR from 'swr'
+import Loading from '../loading'
+import useSWRMutation from 'swr/mutation'
+import { MethodProps, sysRequest } from '../api/fetch'
+import { Download, Loader2 } from 'lucide-react'
+
+const fetcher = (...args: Parameters<typeof fetch>) =>
+  fetch(...args).then((res) => res.json())
+
+const useSongList = (name: string) => {
+  return useSWR(
+    name ? `/api/song?pageNum=1` : null,
+    (url: string) => fetcher(url + `&name=${name}`),
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+    }
+  )
+}
+
+const extractJson = (str: string) => {
+  const start = str.indexOf('{')
+  const end = str.lastIndexOf('}')
+  return str.substring(start, end + 1)
+}
 
 export default function Song() {
-  const [value, setValue] = useState('')
-  const handleClick = async () => {
-    if (value) {
-      const data = await getSong(value)
-      if (data?.url) {
-        saveAs(data.url, `${data.songName}.mp3`)
-      }
-    }
+  const [name, setName] = useState('')
+  const [clickIndex, setClickIndex] = useState(0)
+
+  const { data: list, isValidating, mutate } = useSongList(name)
+  const { trigger, isMutating } = useSWRMutation(
+    `/api/song/download`,
+    (_, { arg }: { arg: MethodProps }) =>
+      sysRequest.get('/api/song/download', arg)
+  )
+
+  const handleDownloadUrl = (str: string) => {
+    const jsonStr = extractJson(str)
+    const json = JSON.parse(jsonStr)
+    return json.data
   }
+
+  const handleDownload = async (l: any, i: number) => {
+    trigger(
+      { params: { songId: l.songId } },
+      {
+        onSuccess(data: any) {
+          const res = handleDownloadUrl(data.result)
+          saveAs(res.lqurl, `${res.songName}.mp3`)
+        },
+      }
+    )
+    setClickIndex(i)
+  }
+
+  const onNameChange = (name: string) => {
+    setName(name)
+  }
+
+  const onSearch = async () => {
+    mutate()
+  }
+
   return (
-    <div>
-      <div>
-        <div className="flex gap-10">
-          <div>
-            <div>1. 打开全民 k 歌对应的歌曲页面</div>
-            <div>2. 点击右上角的<b>三个点</b></div>
-            <div>3. 点击<b>分享</b></div>
-            <div>4. 选择<b>复制链接</b></div>
-            <div>5. 粘贴至下面的输入框中</div>
-            <div>6. 点击下载</div>
-          </div>
-          <div>
-            <div>Example: </div>
-            <div className="w-40">
-              <Image
-                src="/song.jpg"
-                alt="example-song.jpg"
-                width={200}
-                height={400}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="my-8">从这里复制出来链接，然后粘贴到下面的框框去</div>
-        <div className='a w-[800px]'>
-          <Input
-            placeholder="这里粘贴你的全民 k 歌链接"
-            value={value}
-            onInput={(e) => setValue(e.currentTarget.value)}
-          />
-        </div>
-        <Button className="mt-5" onClick={handleClick}>
-          下载
+    <>
+      <div className="flex gap-2 w-full mb-5">
+        <Input
+          placeholder="歌曲名称"
+          value={name}
+          onChange={(e) => onNameChange(e.currentTarget.value)}
+        />
+        <Button
+          className="w-[100px]"
+          onClick={onSearch}
+          disabled={isValidating}
+        >
+          搜索
         </Button>
       </div>
-    </div>
+
+      <Table>
+        <TableCaption>A list of your searched music.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>序号</TableHead>
+            <TableHead className="w-[100px]">名称</TableHead>
+            <TableHead>原唱</TableHead>
+            <TableHead>翻唱</TableHead>
+            <TableHead>下载</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {isValidating ? (
+            <Loading />
+          ) : (
+            ((list?.list ?? []) as any[]).map((l, i) => (
+              <TableRow key={l.songId}>
+                <TableCell>{i + 1}</TableCell>
+                <TableCell
+                  className="font-medium"
+                  dangerouslySetInnerHTML={{
+                    __html: l.songName,
+                  }}
+                ></TableCell>
+                <TableCell>{l.originSinger}</TableCell>
+                <TableCell>{l.singer}</TableCell>
+                <TableCell>
+                  {
+                    <Button
+                      disabled={isMutating}
+                      onClick={() => handleDownload(l, i)}
+                    >
+                      {isMutating && i === clickIndex && (
+                        <Loader2 className="text-white mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      {!isMutating && <Download className="w-4 mr-2" />}
+                      下载
+                    </Button>
+                  }
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </>
   )
 }
