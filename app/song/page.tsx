@@ -10,18 +10,26 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ChangeEvent, Suspense, useEffect, useState } from 'react'
+import { use, useState } from 'react'
 import './index.css'
 import { saveAs } from 'file-saver'
+import useSWR from 'swr'
+import Loading from '../loading'
+import useSWRMutation from 'swr/mutation'
+import { triggerReqGET } from '@/lib/utils'
 
-interface SongProps {
-  name: string
-  pageNum: number
-  pageSize: number
-}
-const fetchSongList = async ({ name, pageNum, pageSize }: SongProps) => {
-  const res = await fetch(`/api/song?name=${name}&pageNum=1`)
-  return res.json()
+const fetcher = (...args: Parameters<typeof fetch>) =>
+  fetch(...args).then((res) => res.json())
+
+const useSongList = (name: string) => {
+  return useSWR(
+    name ? `/api/song?pageNum=1` : null,
+    (url) => fetcher(url + `&name=${name}`),
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+    }
+  )
 }
 
 const extractJson = (str: string) => {
@@ -30,35 +38,50 @@ const extractJson = (str: string) => {
   return str.substring(start, end + 1)
 }
 
+const useDownloadUrl = async (songId: string) => {
+  // const res = await fetch(`/api/song/download?songId=${songId}`)
+  // const wrap = await res.json()
+  // const jsonStr = extractJson(wrap.result)
+  // const data = JSON.parse(jsonStr)
+  // return data.data.lqurl
+  const { trigger } = useSWRMutation(
+    `/api/song/download?songId=${songId}`,
+    triggerReqGET
+  )
+}
+
 export default function Song() {
   const [name, setName] = useState('')
-  const [list, setList] = useState<any[]>([])
+  const { data: list, isValidating, mutate } = useSongList(name)
+  const { trigger, isMutating } = useSWRMutation(
+    `/api/song/download`,
+    triggerReqGET
+  )
 
-  const fetchData = async () => {
-    const result = await fetchSongList({
-      name,
-      pageNum: 1,
-      pageSize: 10,
-    })
-    return result.list ?? []
+  const handleDownloadUrl = (str: string) => {
+    const jsonStr = extractJson(str)
+    const json = JSON.parse(jsonStr)
+    return json.data
   }
 
   const handleDownload = async (l: any) => {
-    const res = await fetch(`/api/song/download?songId=${l.songId}`)
-    const wrap = await res.json()
-    const jsonStr = extractJson(wrap.result)
-    console.log(jsonStr)
-    const data = JSON.parse(jsonStr)
-    console.log(data.lqurl)
-    saveAs(data.data.lqurl, `${data.data.songName}.mp3`)
+    trigger(
+      { songId: l.songId },
+      {
+        onSuccess(data) {
+          const res = handleDownloadUrl(data.result)
+          saveAs(res.lqurl, `${res.songName}.mp3`)
+        },
+      }
+    )
   }
 
-  const onNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setName(e.currentTarget.value)
+  const onNameChange = (name: string) => {
+    setName(name)
   }
+
   const onSearch = async () => {
-    const songList = await fetchData()
-    setList(songList)
+    mutate()
   }
 
   return (
@@ -67,28 +90,33 @@ export default function Song() {
         <Input
           placeholder="歌曲名称"
           value={name}
-          onChange={onNameChange}
-          onMouseEnter={onSearch}
+          onChange={(e) => onNameChange(e.currentTarget.value)}
         />
-        <Button className="w-[100px]" onClick={onSearch}>
+        <Button
+          className="w-[100px]"
+          onClick={onSearch}
+          disabled={isValidating}
+        >
           搜索
         </Button>
       </div>
 
-      <Suspense fallback={<p>loading</p>}>
-        <Table>
-          <TableCaption>A list of your searched music.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead>序号</TableHead>
-              <TableHead className="w-[100px]">名称</TableHead>
-              <TableHead>原唱</TableHead>
-              <TableHead>翻唱</TableHead>
-              <TableHead>下载</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {list.map((l, i) => (
+      <Table>
+        <TableCaption>A list of your searched music.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>序号</TableHead>
+            <TableHead className="w-[100px]">名称</TableHead>
+            <TableHead>原唱</TableHead>
+            <TableHead>翻唱</TableHead>
+            <TableHead>下载</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {isValidating ? (
+            <Loading />
+          ) : (
+            ((list?.list ?? []) as any[]).map((l, i) => (
               <TableRow key={l.songId}>
                 <TableCell>{i + 1}</TableCell>
                 <TableCell
@@ -100,51 +128,54 @@ export default function Song() {
                 <TableCell>{l.originSinger}</TableCell>
                 <TableCell>{l.singer}</TableCell>
                 <TableCell>
-                  <span
-                    className="w-5 inline-block cursor-pointer"
-                    onClick={() => handleDownload(l)}
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                  {
+                    <button
+                      disabled={isMutating}
+                      className="w-5 inline-block cursor-pointer"
+                      onClick={() => handleDownload(l)}
                     >
-                      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                      <g
-                        id="SVGRepo_tracerCarrier"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      ></g>
-                      <g id="SVGRepo_iconCarrier">
-                        {' '}
-                        <path
-                          d="M12 7L12 14M12 14L15 11M12 14L9 11"
-                          stroke="#1C274C"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        ></path>{' '}
-                        <path
-                          d="M16 17H12H8"
-                          stroke="#1C274C"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                        ></path>{' '}
-                        <path
-                          d="M22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C21.5093 4.43821 21.8356 5.80655 21.9449 8"
-                          stroke="#1C274C"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                        ></path>{' '}
-                      </g>
-                    </svg>
-                  </span>
+                      <DownloadIcon />
+                    </button>
+                  }
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Suspense>
+            ))
+          )}
+        </TableBody>
+      </Table>
     </>
   )
 }
+
+const DownloadIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g
+      id="SVGRepo_tracerCarrier"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    ></g>
+    <g id="SVGRepo_iconCarrier">
+      {' '}
+      <path
+        d="M12 7L12 14M12 14L15 11M12 14L9 11"
+        stroke="#1C274C"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>{' '}
+      <path
+        d="M16 17H12H8"
+        stroke="#1C274C"
+        stroke-width="1.5"
+        stroke-linecap="round"
+      ></path>{' '}
+      <path
+        d="M22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C21.5093 4.43821 21.8356 5.80655 21.9449 8"
+        stroke="#1C274C"
+        stroke-width="1.5"
+        stroke-linecap="round"
+      ></path>{' '}
+    </g>
+  </svg>
+)

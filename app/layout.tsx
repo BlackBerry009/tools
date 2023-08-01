@@ -23,7 +23,7 @@ export default function RootLayout({
           <Nav />
         </Suspense>
         <main className="flex pt-20 h-full flex-col items-center justify-between p-24">
-          <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm">
+          <div className="z-1 w-full max-w-5xl items-center justify-between font-mono text-sm">
             {children}
           </div>
         </main>

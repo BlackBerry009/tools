@@ -16,7 +16,7 @@ export default function Navbar() {
   const pathname = usePathname()
 
   return (
-    <div className="bg-white shadow-sm fixed w-full">
+    <div className="bg-white shadow-sm fixed w-full z-10">
       <div className="mx-auto max-w-7xl px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
