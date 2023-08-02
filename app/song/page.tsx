@@ -44,6 +44,7 @@ export default function Song() {
   const [name, setName] = useState('')
   const [songType, setSongType] = useState(0)
   const [pageNum, setPageNum] = useState(1)
+  const [rowIndex, setRowIndex] = useState(0)
 
   const {
     data: list,
@@ -114,8 +115,11 @@ export default function Song() {
     {
       title: '操作',
       key: 'action',
-      render: (_, record) => (
-        <Button loading={isMutating} onClick={() => handleDownload(record)}>
+      render: (_, record, index) => (
+        <Button
+          loading={index === rowIndex && isMutating}
+          onClick={() => handleDownload(record, index)}
+        >
           下载
         </Button>
       ),
@@ -128,7 +132,8 @@ export default function Song() {
     return json.data
   }
 
-  const handleDownload = async (l: DataType) => {
+  const handleDownload = async (l: DataType, index: number) => {
+    setRowIndex(index)
     trigger(
       { params: { songId: l.songId } },
       {
