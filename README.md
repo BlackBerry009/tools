@@ -1,5 +1,5 @@
 ## About
-this is project is to learn Next.js and use some popular library
+this project is to learn Next.js and use some popular library
 
 **Next.js + shadcn ui + tailwind css + swr**
 

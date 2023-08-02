@@ -189,6 +189,7 @@ export default function Song() {
 
       <Spin spinning={searchLoading}>
         <Table
+          caption={<span>旨在下载伴奏，歌曲都无正版版权</span>}
           rowKey="songId"
           columns={columns}
           dataSource={list?.list || []}
