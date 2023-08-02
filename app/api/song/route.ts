@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const name = searchParams.get('name')!
-  const pageNum = searchParams.get('pageNum')
+  const keyword = searchParams.get('keyword')!
+  const pageNum = searchParams.get('page')
+  const filter = searchParams.get('filter')
   const res = await fetch(
     `http://search.5sing.kugou.com/home/json?keyword=${encodeURIComponent(
-      name
-    )}&sort=1&page=1&filter=2&type=0`
+      keyword
+    )}&sort=1&page=${pageNum}&filter=${filter}&type=0`
   )
   const result = await res.json()
 
