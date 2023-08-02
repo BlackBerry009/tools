@@ -1,8 +1,9 @@
+import { inter } from "./fonts"
 
 
 export default function Home() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className={`flex flex-col gap-3 text-3xl ${inter.className}`}>
       <p>hello!</p>
       <p>this is a website with some tools for girlfriend.</p>
       <p>if you find it and need some tools.</p>

@@ -1,11 +1,10 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import Image from 'next/image'
 import { useState } from 'react'
 import { saveAs } from 'file-saver'
 import { getSong } from '../api/ktv'
+import { Button, Input } from 'antd'
 
 export default function Song() {
   const [value, setValue] = useState('')
@@ -18,7 +17,7 @@ export default function Song() {
     }
   }
   return (
-    <div>
+    <div className='text-xl'>
       <div>
         <div className="flex gap-10">
           <div>
@@ -37,6 +36,7 @@ export default function Song() {
                 alt="example-song.jpg"
                 width={200}
                 height={400}
+                priority
               />
             </div>
           </div>
@@ -49,7 +49,7 @@ export default function Song() {
             onInput={(e) => setValue(e.currentTarget.value)}
           />
         </div>
-        <Button className="mt-5" onClick={handleClick}>
+        <Button className="mt-5" type='primary' onClick={handleClick}>
           下载
         </Button>
       </div>
