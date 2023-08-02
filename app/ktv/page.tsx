@@ -17,7 +17,7 @@ export default function Song() {
     }
   }
   return (
-    <div>
+    <div className='text-xl'>
       <div>
         <div className="flex gap-10">
           <div>
@@ -36,6 +36,7 @@ export default function Song() {
                 alt="example-song.jpg"
                 width={200}
                 height={400}
+                priority
               />
             </div>
           </div>

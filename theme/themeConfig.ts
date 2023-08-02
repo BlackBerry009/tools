@@ -5,7 +5,8 @@ const themeConfig: ThemeConfig = {
   token: {
     fontSize: 16,
     colorPrimary: '#18181b',
-    colorPrimaryBg: '#c5c5c5'
+    colorPrimaryBg: '#c5c5c5',
+    fontFamily: 'var(--font-myFont)',
   },
   components:{
     Input: {
