@@ -13,6 +13,6 @@ ant5 use css-in-js feature. so i can custom the theme aimed at shadcn ui
 that's all.
 
 ## Comments
-if you has ideas or need some tools
+if you have ideas or need some tools
 
 you can contact me
