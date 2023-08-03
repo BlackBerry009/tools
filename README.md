@@ -4,14 +4,13 @@ this project is to learn Next.js and use some popular library
 **Next.js + shadcn ui + tailwind css + swr**
 
 ## Conclusion
-shadcn ui is so so so difficult to use because it is very flexible. i need to wrap it for some components.
+> shadcn ui is so difficult to use because it is very flexible. I need to wrap it up for some components.
+> therefore, I have to use antd to replace it
+> antd5 use css-in-js feature. so I can customize the theme and aim at shadcn ui
 
-therefore, i have to use antd to replace it
+> swr with antd don't work well together, should be combined with ahooks
 
-ant5 use css-in-js feature. so i can custom the theme aimed at shadcn ui
-
-that's all.
-
+That's all
 ## Comments
 if you have ideas or need some tools
 
