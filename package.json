@@ -30,6 +30,7 @@
     "typescript": "5.1.6"
   },
   "devDependencies": {
+    "@svgr/webpack": "^8.0.1",
     "@types/file-saver": "^2.0.5",
     "rome": "12.1.3"
   }

@@ -6,7 +6,6 @@ const themeConfig: ThemeConfig = {
     fontSize: 16,
     colorPrimary: '#18181b',
     colorPrimaryBg: '#c5c5c5',
-    fontFamily: 'var(--font-myFont)',
   },
   components:{
     Input: {

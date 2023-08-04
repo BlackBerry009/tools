@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { saveAs } from 'file-saver'
 import { getSong } from '../api/ktv'
 import { Button, Input } from 'antd'
+import CircleSvg from '@/public/circle.svg'
+import LineSvg from '@/public/line.svg'
 
 export default function Song() {
   const [value, setValue] = useState('')
@@ -17,14 +19,38 @@ export default function Song() {
     }
   }
   return (
-    <div className='text-xl'>
+    <div className="text-lg">
       <div>
         <div className="flex gap-10">
           <div>
             <div>1. 打开全民 k 歌对应的歌曲页面</div>
-            <div>2. 点击右上角的<b>三个点</b></div>
-            <div>3. 点击<b>分享</b></div>
-            <div>4. 选择<b>复制链接</b></div>
+            <div>
+              2. 点击右上角的
+              <b className="relative">
+                <span>三个点</span>
+                <div className="w-[80px] absolute -right-4 -top-5">
+                  <CircleSvg />
+                </div>
+              </b>
+            </div>
+            <div>
+              3. 点击
+              <b className="relative">
+                <span>分享</span>
+                <div className="absolute w-[50px] -right-1 -bottom-1">
+                  <LineSvg />
+                </div>
+              </b>
+            </div>
+            <div>
+              4. 选择
+              <b className="relative">
+                <span>复制链接</span>
+                <div className="absolute w-[90px] -right-2 -bottom-2">
+                  <LineSvg />
+                </div>
+              </b>
+            </div>
             <div>5. 粘贴至下面的输入框中</div>
             <div>6. 点击下载</div>
           </div>
@@ -42,14 +68,14 @@ export default function Song() {
           </div>
         </div>
         <div className="my-8">从这里复制出来链接，然后粘贴到下面的框框去</div>
-        <div className='a w-[800px]'>
+        <div className="a w-[800px]">
           <Input
             placeholder="这里粘贴你的全民 k 歌链接"
             value={value}
             onInput={(e) => setValue(e.currentTarget.value)}
           />
         </div>
-        <Button className="mt-5" type='primary' onClick={handleClick}>
+        <Button className="mt-5" type="primary" onClick={handleClick}>
           下载
         </Button>
       </div>

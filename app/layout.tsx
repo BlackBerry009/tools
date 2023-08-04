@@ -1,11 +1,10 @@
-import './globals.css'
-import type { Metadata } from 'next'
-import Nav from './nav'
 import StyledComponentsRegistry from '@/lib/AntdRegistry'
-import { ConfigProvider } from 'antd'
 import theme from '@/theme/themeConfig'
-import { myFont } from './fonts'
-
+import { ConfigProvider } from 'antd'
+import type { Metadata } from 'next'
+import './globals.css'
+import Nav from './nav'
+import {inter} from './fonts'
 
 export const metadata: Metadata = {
   title: 'Tools',
@@ -19,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={myFont.className}>
+      <body className={inter.className}>
         <ConfigProvider theme={theme}>
           <StyledComponentsRegistry>
             <Nav />
