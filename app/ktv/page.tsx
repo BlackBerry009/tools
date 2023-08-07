@@ -21,7 +21,7 @@ export default function Song() {
   return (
     <div className="text-lg">
       <div>
-        <div className="flex gap-10">
+        <div className="block lg:gap-10 lg:flex">
           <div>
             <div>1. 打开全民 k 歌对应的歌曲页面</div>
             <div>
@@ -67,7 +67,7 @@ export default function Song() {
             </div>
           </div>
         </div>
-        <div className="my-8">从这里复制出来链接，然后粘贴到下面的框框去</div>
+        <div className="my-8 break-all">从这里复制出来链接，然后粘贴到下面的框框去</div>
         <div className="a w-[800px]">
           <Input
             placeholder="这里粘贴你的全民 k 歌链接"

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import Image from 'next/image'
+import AvatarSvg from '@/public/avatar.svg'
 
 const navigation = [
   { name: '全民 k 歌', href: '/ktv' },
@@ -21,8 +21,8 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
-            <Link className="flex flex-shrink-0 items-center" href="/">
-              <Image src="/avatar.svg" alt='avatar' width={50} height={50}/>
+            <Link className="flex flex-shrink-0 items-center w-[50px]" href="/">
+              <AvatarSvg />
             </Link>
             <div className="-my-px ml-6 flex space-x-8">
               {navigation.map((item) => (
