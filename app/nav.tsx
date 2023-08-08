@@ -21,7 +21,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
-            <Link className="flex flex-shrink-0 items-center w-[50px]" href="/">
+            <Link className="flex flex-shrink-0 items-center w-[50px] hover:scale-150 transition-all" href="/">
               <AvatarSvg />
             </Link>
             <div className="-my-px ml-6 flex space-x-8">

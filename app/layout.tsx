@@ -7,7 +7,7 @@ import Nav from './nav'
 import {inter} from './fonts'
 
 export const metadata: Metadata = {
-  title: 'Tools',
+  title: 'TOOLS',
   description: '日常使用的一些工具',
 }
 
